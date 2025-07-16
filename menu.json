@@ -1,0 +1,34 @@
+[
+    {
+      "id": 1,
+      "nombre": "Pizza Margarita",
+      "precio": 10.00,
+      "descripcion": "Clásica pizza con salsa de tomate, mozzarella fresca y albahaca.",
+      "categoria": "Pizzas",
+      "disponible": true
+    },
+    {
+      "id": 2,
+      "nombre": "Pizza Pepperoni",
+      "precio": 12.00,
+      "descripcion": "La favorita de todos con extra pepperoni y queso mozzarella.",
+      "categoria": "Pizzas",
+      "disponible": true
+    },
+    {
+      "id": 3,
+      "nombre": "Ensalada César",
+      "precio": 8.00,
+      "descripcion": "Lechuga romana, crutones, queso parmesano y aderezo César.",
+      "categoria": "Entradas",
+      "disponible": false
+    },
+    {
+      "id": 4,
+      "nombre": "Refresco",
+      "precio": 2.00,
+      "descripcion": "Lata de 355ml. Sabores variados.",
+      "categoria": "Bebidas",
+      "disponible": true
+    }
+  ]
