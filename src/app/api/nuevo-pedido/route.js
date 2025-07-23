@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 // Importamos NextResponse para enviar la respuesta
 import { NextResponse } from 'next/server';
 
