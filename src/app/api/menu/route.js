@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 // Importamos la librería 'NextResponse' para poder enviar respuestas en formato JSON
 import { NextResponse } from 'next/server';
 // Importamos las librerías 'path' y 'fs' de Node.js para poder leer archivos del sistema
