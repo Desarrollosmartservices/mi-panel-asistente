@@ -1,24 +1,48 @@
-export const runtime = 'edge';
-// Importamos la librería 'NextResponse' para poder enviar respuestas en formato JSON
+export const runtime = 'edge'; // Mantenemos esta línea importante
+
 import { NextResponse } from 'next/server';
-// Importamos las librerías 'path' y 'fs' de Node.js para poder leer archivos del sistema
-import path from 'path';
-import { promises as fs } from 'fs';
 
-// Definimos la función que se ejecutará cuando alguien haga una petición GET a nuestra URL
+// ¡AQUÍ ESTÁ EL CAMBIO! Hemos movido los datos del menú a una constante.
+const menuData = [
+  {
+    "id": 1,
+    "nombre": "Pizza Margarita",
+    "precio": 10.00,
+    "descripcion": "Clásica pizza con salsa de tomate, mozzarella fresca y albahaca.",
+    "categoria": "Pizzas",
+    "disponible": true
+  },
+  {
+    "id": 2,
+    "nombre": "Pizza Pepperoni",
+    "precio": 12.00,
+    "descripcion": "La favorita de todos con extra pepperoni y queso mozzarella.",
+    "categoria": "Pizzas",
+    "disponible": true
+  },
+  {
+    "id": 3,
+    "nombre": "Ensalada César",
+    "precio": 8.00,
+    "descripcion": "Lechuga romana, crutones, queso parmesano y aderezo César.",
+    "categoria": "Entradas",
+    "disponible": false
+  },
+  {
+    "id": 4,
+    "nombre": "Refresco",
+    "precio": 2.00,
+    "descripcion": "Lata de 355ml. Sabores variados.",
+    "categoria": "Bebidas",
+    "disponible": true
+  }
+];
+
+// La función ahora es mucho más simple. Ya no necesita leer archivos.
 export async function GET(request) {
-  // 1. Construir la ruta completa hasta nuestro archivo menu.json
-  const jsonFilePath = path.join(process.cwd(), 'menu.json');
+  // Filtramos el menú para obtener solo los productos disponibles
+  const availableItems = menuData.filter(item => item.disponible === true);
 
-  // 2. Leer el contenido del archivo de forma asíncrona
-  const fileContents = await fs.readFile(jsonFilePath, 'utf8');
-
-  // 3. Convertir el texto del archivo (que es un string) a un objeto JSON que podamos manipular
-  const menu = JSON.parse(fileContents);
-
-  // 4. Filtrar el menú para obtener solo los productos donde la propiedad "disponible" es true
-  const availableItems = menu.filter(item => item.disponible === true);
-
-  // 5. Devolver como respuesta únicamente los productos disponibles, en formato JSON.
+  // Devolvemos como respuesta únicamente los productos disponibles.
   return NextResponse.json(availableItems);
 }
