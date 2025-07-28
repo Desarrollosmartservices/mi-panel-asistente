@@ -1,48 +1,40 @@
-export const runtime = 'edge'; // Mantenemos esta línea importante
-
+export const runtime = 'edge';
 import { NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
 
-// ¡AQUÍ ESTÁ EL CAMBIO! Hemos movido los datos del menú a una constante.
-const menuData = [
-  {
-    "id": 1,
-    "nombre": "Pizza Margarita",
-    "precio": 10.00,
-    "descripcion": "Clásica pizza con salsa de tomate, mozzarella fresca y albahaca.",
-    "categoria": "Pizzas",
-    "disponible": true
-  },
-  {
-    "id": 2,
-    "nombre": "Pizza Pepperoni",
-    "precio": 12.00,
-    "descripcion": "La favorita de todos con extra pepperoni y queso mozzarella.",
-    "categoria": "Pizzas",
-    "disponible": true
-  },
-  {
-    "id": 3,
-    "nombre": "Ensalada César",
-    "precio": 8.00,
-    "descripcion": "Lechuga romana, crutones, queso parmesano y aderezo César.",
-    "categoria": "Entradas",
-    "disponible": false
-  },
-  {
-    "id": 4,
-    "nombre": "Refresco",
-    "precio": 2.00,
-    "descripcion": "Lata de 355ml. Sabores variados.",
-    "categoria": "Bebidas",
-    "disponible": true
-  }
-];
+// Pega aquí tus credenciales de Supabase
+const supabaseUrl = 'https://gzyzsjospcysvwvzjtxa.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6eXpzam9zcGN5c3Z3dnpqdHhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3MTMwOTgsImV4cCI6MjA2OTI4OTA5OH0.bBr6hKWQQb5_qHODYuWYEsx1K-bXS7JP7Mubo_Fmrtg';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// La función ahora es mucho más simple. Ya no necesita leer archivos.
 export async function GET(request) {
-  // Filtramos el menú para obtener solo los productos disponibles
-  const availableItems = menuData.filter(item => item.disponible === true);
+  try {
+    // Obtenemos los productos disponibles de la tabla 'productos'
+    const { data: productos, error: errorProductos } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('disponible', true);
 
-  // Devolvemos como respuesta únicamente los productos disponibles.
-  return NextResponse.json(availableItems);
+    if (errorProductos) throw errorProductos;
+
+    // Obtenemos todos los ingredientes adicionales de la tabla 'ingredientes'
+    const { data: adicionales, error: errorAdicionales } = await supabase
+      .from('ingredientes')
+      .select('*')
+      .gt('precio_adicional', 0); // gt = greater than (mayor que)
+
+    if (errorAdicionales) throw errorAdicionales;
+
+    // Estructuramos la respuesta
+    const responseData = {
+      menu: productos,
+      adicionales: adicionales
+    };
+
+    return NextResponse.json(responseData);
+
+  } catch (error) {
+    // Manejo de errores
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
