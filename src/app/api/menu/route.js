@@ -9,32 +9,37 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET(request) {
   try {
-    // Obtenemos los productos disponibles de la tabla 'productos'
+    // Consulta 1: Obtener los productos disponibles
     const { data: productos, error: errorProductos } = await supabase
       .from('productos')
       .select('*')
       .eq('disponible', true);
-
     if (errorProductos) throw errorProductos;
 
-    // Obtenemos todos los ingredientes adicionales de la tabla 'ingredientes'
+    // Consulta 2: Obtener los ingredientes adicionales
     const { data: adicionales, error: errorAdicionales } = await supabase
       .from('ingredientes')
       .select('*')
-      .gt('precio_adicional', 0); // gt = greater than (mayor que)
-
+      .gt('precio_adicional', 0);
     if (errorAdicionales) throw errorAdicionales;
 
-    // Estructuramos la respuesta
+    // ¡NUEVA CONSULTA 3! Obtener la configuración general (incluyendo la URL de la imagen)
+    const { data: configuracion, error: errorConfig } = await supabase
+      .from('configuracion')
+      .select('url_menu_imagen')
+      .limit(1); // Solo necesitamos la primera (y única) fila
+    if (errorConfig) throw errorConfig;
+
+    // Estructuramos la respuesta final, incluyendo la configuración
     const responseData = {
       menu: productos,
-      adicionales: adicionales
+      adicionales: adicionales,
+      configuracion: configuracion 
     };
 
     return NextResponse.json(responseData);
 
   } catch (error) {
-    // Manejo de errores
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
