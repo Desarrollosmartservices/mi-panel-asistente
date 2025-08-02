@@ -1,33 +1,30 @@
-// src/app/api/asistente/route.js
-import { createClient } from '@supabase/supabase-js';
+export const runtime = 'edge';
 
-// Configura Supabase (usa variables de entorno)
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { createClient } from '@supabase/ssr';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY
+);
 
 export async function POST(request) {
   try {
     const { mensaje, cliente_id } = await request.json();
 
-    // 1. Buscar en FAQs (Supabase)
+    // Buscar en FAQs
     const { data: faqs, error } = await supabase
       .from('faqs')
-      .select('*');
+      .select('*')
+      .ilike('pregunta', `%${mensaje}%`);
 
     if (error) throw error;
-
-    // 2. Verificar si la pregunta está en FAQs
-    const pregunta = mensaje.toLowerCase();
-    const respuestaFAQ = faqs.find(faq => 
-      faq.pregunta.toLowerCase().includes(pregunta)
-    );
-
-    if (respuestaFAQ) {
-      return Response.json({ respuesta: respuestaFAQ.respuesta });
+    if (faqs.length > 0) {
+      return new Response(JSON.stringify({ respuesta: faqs[0].respuesta }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
 
-    // 3. Si no está en FAQs, usar DeepSeek (o respuesta predeterminada)
+    // Consultar a DeepSeek
     const deepseekResponse = await fetch('https://api.deepseek.com/v1/chat', {
       method: 'POST',
       headers: { 
@@ -43,15 +40,22 @@ export async function POST(request) {
     const data = await deepseekResponse.json();
     const respuestaIA = data.choices[0].message.content;
 
-    // 4. Opcional: Guardar conversación en Supabase
+    // Guardar conversación
     await supabase
       .from('conversaciones')
-      .insert([{ cliente_id, mensajes: [{ usuario: mensaje, asistente: respuestaIA }] }]);
+      .insert([{ 
+        cliente_id, 
+        mensajes: [{ usuario: mensaje, asistente: respuestaIA }] 
+      }]);
 
-    return Response.json({ respuesta: respuestaIA });
+    return new Response(JSON.stringify({ respuesta: respuestaIA }), {
+      headers: { 'Content-Type': 'application/json' }
+    });
 
   } catch (error) {
-    console.error("Error:", error);
-    return Response.json({ error: "Error interno" }, { status: 500 });
+    return new Response(JSON.stringify({ error: "Error interno" }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
